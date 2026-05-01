@@ -17,11 +17,14 @@ public class JournalEntryController {
     @Autowired
     private JournalEntryService journalEntryService;
 
-    @PostMapping
-    public ResponseEntity<?> createEntry(@RequestBody JournalEntry myEntry){
-        myEntry.setDate(LocalDateTime.now()); //date and time
-        journalEntryService.saveEntry(myEntry);
-        return new ResponseEntity<>(myEntry,HttpStatus.CREATED);
+    @PostMapping("/{userName}")
+    public ResponseEntity<?> createEntry(@RequestBody JournalEntry myEntry, @PathVariable String userName){
+        try{
+            journalEntryService.saveEntry(myEntry,userName);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping
@@ -45,31 +48,13 @@ public class JournalEntryController {
         }
     }
 
-    @DeleteMapping("/id/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable ObjectId id){
-       Optional<JournalEntry> journalEntry = journalEntryService.findById(id);
-       if(journalEntry.isPresent()){
-           journalEntryService.deleteById(id);
-           return new ResponseEntity<>(HttpStatus.OK);
-       }
-       else{
-           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-       }
-    }
-
-    @PutMapping("id/{id}")
-    public ResponseEntity<?> update(@PathVariable ObjectId id, @RequestBody JournalEntry newEntry){
-        Optional<JournalEntry> oldEntry = journalEntryService.findById(id);
-        if(oldEntry.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        else {
-            JournalEntry oldEntryData = oldEntry.get();
-            oldEntryData.setTitle(newEntry.getTitle());
-            oldEntryData.setContent(newEntry.getContent());
-            //ab updated data ko save bhi krna padega
-            journalEntryService.saveEntry(oldEntryData);
-            return new ResponseEntity<>(oldEntryData,HttpStatus.OK);
+    @DeleteMapping("/id/{userName}/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable ObjectId id, @PathVariable String userName) {
+        try{
+            journalEntryService.deleteById(id, userName);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }
