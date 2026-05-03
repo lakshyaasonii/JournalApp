@@ -21,6 +21,9 @@ public class JournalEntryService {
     @Transactional
     public void saveEntry(JournalEntry journalEntry, String userName){
         User user = userService.findByUserName(userName);
+        if(user == null){
+            throw new RuntimeException("User not found");
+        }
         journalEntry.setDate(LocalDateTime.now());
         JournalEntry saved = journalEntryRepository.save(journalEntry); //save to database
         user.getJournalEntries().add(saved);//user pojo me journalEntries list me journalEntry ka data add krna
@@ -40,6 +43,9 @@ public class JournalEntryService {
     @Transactional
     public void deleteById(ObjectId id, String userName) {
         User user = userService.findByUserName(userName);
+        if(user == null){
+            throw new RuntimeException("User not found");
+        }
         user.getJournalEntries().removeIf(x -> x.getId().equals(id));
         userService.saveEntry(user);
         journalEntryRepository.deleteById(id);
